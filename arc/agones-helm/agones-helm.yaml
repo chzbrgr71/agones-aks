@@ -1,0 +1,15 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: agones
+  namespace: agones-system
+spec:
+  releaseName: agones
+  chart:
+    repository: https://agones.dev/chart/stable
+    name: agones-chart
+    #version: 1.13.0
+  values:
+    agones.controller.nodeSelector.app: agones
+    agones.ping.nodeSelector.app: agones
+    agones.allocator.nodeSelector.app: agones
