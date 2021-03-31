@@ -90,24 +90,28 @@ nc -u 10.240.0.11 7893
 az connectedk8s list -g $RGNAME
 az connectedk8s connect --name $CLUSTERNAME --resource-group $RGNAME -l $LOCATION
 
-az k8sconfiguration create \
---name agones-base \
+az k8s-configuration create \
+--name agones-base2 \
 --cluster-name $CLUSTERNAME \
 --resource-group $RGNAME \
---operator-instance-name agones-helm \
---operator-namespace flux \
+--operator-instance-name agones-helm2 \
+--operator-namespace flux2 \
 --operator-params='--git-readonly --git-path=arc/agones-helm --git-branch main --sync-garbage-collection' \
 --enable-helm-operator \
---helm-operator-version='1.2.0' \
+--helm-operator-chart-version='1.2.0' \
 --helm-operator-params='--set helm.versions=v3' \
 --repository-url https://github.com/chzbrgr71/agones-aks.git \
 --scope namespace \
 --cluster-type connectedClusters
 
-az k8sconfiguration list --cluster-name $CLUSTERNAME --resource-group $RGNAME --cluster-type connectedClusters
+az k8s-configuration list --cluster-name $CLUSTERNAME --resource-group $RGNAME --cluster-type connectedClusters
 
-az k8sconfiguration show --name agones-base --cluster-name $CLUSTERNAME --resource-group $RGNAME --cluster-type connectedClusters -o json
+az k8s-configuration show --name agones-base --cluster-name $CLUSTERNAME --resource-group $RGNAME --cluster-type connectedClusters -o json
 
+az k8s-configuration delete --name agones-base --cluster-name $CLUSTERNAME --resource-group $RGNAME --cluster-type connectedClusters
 
+az k8s-configuration create --name azure-arc-sample --cluster-name $CLUSTERNAME --resource-group $RGNAME --operator-instance-name flux --operator-namespace arc-k8s-demo --operator-params='--git-readonly --git-path=releases' --enable-helm-operator --helm-operator-chart-version='1.2.0' --helm-operator-params='--set helm.versions=v3' --repository-url https://github.com/Azure/arc-helm-demo.git --scope namespace --cluster-type connectedClusters
+
+az k8s-configuration show --name azure-arc-sample --cluster-name $CLUSTERNAME --resource-group $RGNAME --cluster-type connectedClusters -o json
 
 ```
