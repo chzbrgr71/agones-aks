@@ -62,6 +62,17 @@ az aks nodepool add \
     --enable-node-public-ip \
     --no-wait
 
+az aks nodepool add --resource-group $RGNAME \
+--cluster-name $CLUSTERNAME \
+--name agonesnp2 \
+--node-vm-size Standard_A4_v2 \
+--node-count 5 \
+--mode User \
+--node-taints=agones.dev/agones-system=true:NoExecute \
+--labels=agones.dev/agones-system=true \
+--enable-node-public-ip \
+--kubernetes-version 1.18.14
+
 az aks nodepool list --resource-group $RGNAME --cluster-name $CLUSTERNAME
 
 # agones manual install
@@ -78,6 +89,8 @@ helm install agones-release agones/agones \
     --set 'agones.ping.nodeSelector.app=agones' \
     --set 'agones.allocator.nodeSelector.app=agones'
 
+helm install agones-release --namespace agones-system --create-namespace agones/agones
+
 kubectl create -f ./arc/manifests/gameserver.yaml
 kubectl create -f ./arc/manifests/fleet.yaml
 
@@ -91,24 +104,24 @@ az connectedk8s list -g $RGNAME
 az connectedk8s connect --name $CLUSTERNAME --resource-group $RGNAME -l $LOCATION
 
 az k8s-configuration create \
---name agones-base2 \
+--name agones-base \
 --cluster-name $CLUSTERNAME \
 --resource-group $RGNAME \
---operator-instance-name agones-helm2 \
---operator-namespace flux2 \
+--operator-instance-name agones-helm \
+--operator-namespace flux \
 --operator-params='--git-readonly --git-path=arc/agones-helm --git-branch main --sync-garbage-collection' \
 --enable-helm-operator \
 --helm-operator-chart-version='1.2.0' \
 --helm-operator-params='--set helm.versions=v3' \
 --repository-url https://github.com/chzbrgr71/agones-aks.git \
---scope namespace \
+--scope cluster \
 --cluster-type connectedClusters
 
 az k8s-configuration list --cluster-name $CLUSTERNAME --resource-group $RGNAME --cluster-type connectedClusters
 
-az k8s-configuration show --name agones-base --cluster-name $CLUSTERNAME --resource-group $RGNAME --cluster-type connectedClusters -o json
+az k8s-configuration show --name agones-base2 --cluster-name $CLUSTERNAME --resource-group $RGNAME --cluster-type connectedClusters -o json
 
-az k8s-configuration delete --name agones-base --cluster-name $CLUSTERNAME --resource-group $RGNAME --cluster-type connectedClusters
+az k8s-configuration delete --name agones-base2 --cluster-name $CLUSTERNAME --resource-group $RGNAME --cluster-type connectedClusters
 
 az k8s-configuration create --name azure-arc-sample --cluster-name $CLUSTERNAME --resource-group $RGNAME --operator-instance-name flux --operator-namespace arc-k8s-demo --operator-params='--git-readonly --git-path=releases' --enable-helm-operator --helm-operator-chart-version='1.2.0' --helm-operator-params='--set helm.versions=v3' --repository-url https://github.com/Azure/arc-helm-demo.git --scope namespace --cluster-type connectedClusters
 
