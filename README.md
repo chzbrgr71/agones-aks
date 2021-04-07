@@ -9,13 +9,13 @@ Links:
 ```bash
 
 # create AKS cluster
-export CLUSTERNAME=briar-agones
+export CLUSTERNAME=my-agones
 export K8SVERSION=1.18.14
 export VMSIZE=Standard_D2_v2
 export NODECOUNT=3
 export RGNAME=agones
 export LOCATION=southcentralus
-export AZUREMONITOR=/subscriptions/471d33fd-a776-405b-947c-467c291dc741/resourcegroups/monitoring/providers/microsoft.operationalinsights/workspaces/briar-aks-monitoring
+export AZUREMONITOR=
 export SECOND_NODEPOOL=agonesnp1
 
 az group create --name $RGNAME --location $LOCATION
@@ -36,8 +36,8 @@ az aks get-credentials -n $CLUSTERNAME -g $RGNAME
 
 # add NSG
 export INFRA_RG=$(az aks show -g $RGNAME -n $CLUSTERNAME -o tsv --query nodeResourceGroup)
-export NSG_NAME=aks-agentpool-21002717-nsg
-export VMSS_NAME=aks-nodepool1-21002717-vmss
+export NSG_NAME=
+export VMSS_NAME=
 
 az network nsg rule create \
   --resource-group $INFRA_RG \
@@ -80,7 +80,6 @@ kubectl run ubuntu --rm -it --image=ubuntu -- bash
 apt update
 apt install netcat 
 nc -u 10.240.0.9 7637
-nc -u 13.84.205.169 7229
 
 az vmss list-instance-public-ips -g MC_agones_briar-agones_southcentralus -n aks-agonesnp2-21002717-vmss
 
@@ -107,6 +106,4 @@ az k8s-configuration list --cluster-name $CLUSTERNAME --resource-group $RGNAME -
 az k8s-configuration show --name agones-base --cluster-name $CLUSTERNAME --resource-group $RGNAME --cluster-type connectedClusters -o json
 
 az k8s-configuration delete --name agones-base --cluster-name $CLUSTERNAME --resource-group $RGNAME --cluster-type connectedClusters
-
-
 ```
